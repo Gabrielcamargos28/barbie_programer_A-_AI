@@ -3,6 +3,8 @@ from map.map_converter import converter_xlsx_para_csv
 from a_star.a_star import a_star
 from personas.friends import inicializar_amigos, convencer_amigo
 from interface.interface import inicializar_interface, atualizar_interface
+import pygame
+
 
 def main():
     
@@ -31,6 +33,15 @@ def main():
     
     for amigo in amigos:
         convencer_amigo(amigo)
+        
+    executando = True
+    while executando:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                executando = False
+                
+    pygame.quit()
+
 
 if __name__ == "__main__":
     main()

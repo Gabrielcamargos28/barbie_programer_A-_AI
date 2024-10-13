@@ -3,11 +3,10 @@ def heuristica(ponto_atual, ponto_destino):
 
 def custo_movimento(terreno):
     custos = {
-        0: 1,   # Asfalto
-        1: 3,   # Terra
-        2: 5,   # Grama
-        3: 10,  # Paralelepípedo
-        -1: float('inf'),  # Edifício (intransponível)
-        5: 7
+        1: 1,   # Asfalto
+        3: 3,   # Terra
+        5: 5,   # Grama
+        10: 10,  # Paralelepípedo
+        -1: float('inf')  # Edifício (intransponível)
     }
     return custos[terreno]

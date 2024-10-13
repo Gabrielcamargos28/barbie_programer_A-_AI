@@ -5,7 +5,9 @@ def inicializar_interface(mapa):
     largura_tela = 600
     altura_tela = 600
     tela = pygame.display.set_mode((largura_tela, altura_tela))
+    
     desenhar_mapa(tela, mapa)
+    
     return tela
 
 
@@ -15,9 +17,10 @@ def desenhar_mapa(tela, mapa):
         3: (139, 69, 19),  # Terra
         5: (34, 139, 34),  # Grama
         10: (169, 169, 169),  # Paralelepípedo
-        0: (255, 165, 0)  # Edifício
+        -1: (255, 165, 0)  # Edifício
     }
     tamanho_celula = 600 // len(mapa)
+    
     for linha in range(len(mapa)):
         for coluna in range(len(mapa[0])):
             cor = cores[mapa[linha][coluna]]
