@@ -6,6 +6,31 @@ from interface.interface import inicializar_interface, atualizar_interface
 import pygame
 
 
+
+def desenhar_amigos(tela, amigos, tamanho_celula):
+    """Desenha a posição dos amigos no mapa."""
+    for amigo in amigos:
+        pygame.draw.circle(
+            tela, 
+            (0, 0, 255),  # Azul para representar os amigos
+            (amigo[1] * tamanho_celula + tamanho_celula // 2, amigo[0] * tamanho_celula + tamanho_celula // 2), 
+            tamanho_celula // 4
+        )
+    pygame.display.flip()
+
+def desenhar_caminho(tela, caminho, tamanho_celula):
+    """Desenha o caminho percorrido pela Barbie no mapa."""
+    for passo in caminho:
+        pygame.draw.circle(
+            tela, 
+            (255, 0, 255),  # Rosa para indicar o caminho
+            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2), 
+            tamanho_celula // 6
+        )
+        pygame.display.flip()
+        pygame.time.wait(100)  # Atraso para visualizar o desenho do caminho
+
+
 def main():
     
     converter_xlsx_para_csv('map/mundo.xlsx', 'map/mapa.csv')
@@ -13,11 +38,14 @@ def main():
     
     mapa = carregar_mapa('map/mapa.csv')
     
+    tamanho_celula = 600 // len(mapa)
     
     tela = inicializar_interface(mapa)
     
     
     amigos = inicializar_amigos()
+    
+    desenhar_amigos(tela, amigos, tamanho_celula)
 
     
     inicio = (19, 23)
@@ -33,6 +61,11 @@ def main():
     
     for amigo in amigos:
         convencer_amigo(amigo)
+        
+    
+    desenhar_caminho(tela, caminho, tamanho_celula)
+        
+        
         
     executando = True
     while executando:
