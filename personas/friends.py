@@ -2,12 +2,13 @@ import random
 
 def inicializar_amigos():
     amigos = {
-        (10, 10): "Amigo 1",
-        (5, 20): "Amigo 2",
-        (30, 15): "Amigo 3",
-        (25, 30): "Amigo 4",
-        (15, 35): "Amigo 5",
-        (8, 12): "Amigo 6",
+        (4, 12): "Amigo 1",
+        (9, 8): "Amigo 2",
+        (5, 34): "Amigo 3",
+        (5, 34): "Amigo 4",
+        (23, 37): "Amigo 5",
+        (35, 14): "Amigo 6",
+        (36, 36): "Barbie",#barbie
     }
     return amigos
 
