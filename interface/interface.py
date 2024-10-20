@@ -3,12 +3,16 @@ import pygame
 def inicializar_interface(mapa):
     pygame.init()
     largura_tela = 600
-    altura_tela = 600
+    altura_tela = 700
     tela = pygame.display.set_mode((largura_tela, altura_tela))
     
     desenhar_mapa(tela, mapa)
     
-    return tela
+    painel = pygame.Surface((600, 100))  # Painel de 600x100 pixels
+    tela.blit(painel, (0, 600))  # Posiciona o painel abaixo do mapa
+    pygame.display.update()
+    
+    return tela, painel
 
 
 def desenhar_mapa(tela, mapa):
@@ -33,3 +37,10 @@ def atualizar_interface(tela, mapa, posicao_barbie):
     tamanho_celula = 600 // len(mapa)
     pygame.draw.circle(tela, (255, 0, 0), (posicao_barbie[1] * tamanho_celula + tamanho_celula // 2, posicao_barbie[0] * tamanho_celula + tamanho_celula // 2), tamanho_celula // 3)
     pygame.display.flip()
+    
+def atualizar_painel(painel, custo_parcial, font):
+    """Atualiza o painel com as estatísticas de custo do caminho."""
+    painel.fill((255, 255, 255))  # Fundo branco para o painel
+    texto_custo = font.render(f"Custo Total: {custo_parcial}", True, (0, 0, 0))
+    painel.blit(texto_custo, (10, 10))
+    pygame.display.update()
