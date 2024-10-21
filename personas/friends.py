@@ -5,10 +5,9 @@ def inicializar_amigos():
         (4, 12): "Amigo 1",
         (9, 8): "Amigo 2",
         (5, 34): "Amigo 3",
-        (5, 34): "Amigo 4",
-        (23, 37): "Amigo 5",
-        (35, 14): "Amigo 6",
-        (36, 36): "Barbie",#barbie
+        (23, 37): "Amigo 4",
+        (35, 14): "Amigo 5",
+        (36, 36): "Amigo 6",
     }
     return amigos
 

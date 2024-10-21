@@ -8,6 +8,34 @@ import pygame
 from utils.helpers import heuristica, custo_movimento
 
 
+
+def atualizar_interface(tela, mapa, posicao_barbie, visitados):
+    """Atualiza a interface, desenhando o mapa e a posição da Barbie."""
+    tamanho_celula = 600 // len(mapa)
+    
+    # Desenhar o mapa
+    desenhar_mapa(tela, mapa)  
+    
+    # Desenhar caminho percorrido
+    for passo in visitados:
+        pygame.draw.circle(
+            tela,
+            (128, 128, 128),  # Cinza para o caminho já percorrido
+            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2),
+            tamanho_celula // 6
+        )
+    
+    # Desenhar a Barbie
+    pygame.draw.circle(
+        tela, 
+        (255, 0, 0),  # Vermelho para a Barbie
+        (posicao_barbie[1] * tamanho_celula + tamanho_celula // 2, posicao_barbie[0] * tamanho_celula + tamanho_celula // 2), 
+        tamanho_celula // 3
+    )
+    
+    pygame.display.flip()
+
+
 def desenhar_amigos(tela, amigos, tamanho_celula):
     """Desenha a posição dos amigos no mapa."""
     for amigo in amigos:
@@ -27,27 +55,26 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         custo_parcial += custo_movimento(mapa[passo[0]][passo[1]])
         print(f"Custo atual após o passo {passo}: {custo_parcial}")
         
-        cor = (128, 128, 128) if passo in visitados else (255, 0, 255)  # Cinza para caminho repetido, rosa para caminho novo        
-        pygame.draw.circle(
-            tela, 
-            cor,  # Rosa para indicar o caminho
-            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2), 
-            tamanho_celula // 6
-        )
-        pygame.display.flip()
-        pygame.time.wait(100)  # Atraso para visualizar o desenho do caminho
+        # Desenhar o caminho novo
+        if passo not in visitados:
+            pygame.draw.circle(
+                tela, 
+                (255, 0, 255),  # Rosa para indicar o novo caminho
+                (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2), 
+                tamanho_celula // 6
+            )
+            visitados.add(passo)  # Adiciona o passo aos visitados
+        else:
+            # Desenhar o caminho repetido
+            pygame.draw.circle(
+                tela, 
+                (128, 128, 128),  # Cinza para o caminho repetido
+                (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2), 
+                tamanho_celula // 6
+            )
         
-        visitados.add(passo)
-    
-    # Desenhar o caminho completo percorrido de forma distinta
-    for passo in visitados:
-        pygame.draw.circle(
-            tela,
-            (128, 128, 128),  # Cinza para o caminho já percorrido
-            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2),
-            tamanho_celula // 6
-        )
-    pygame.display.flip()
+        pygame.display.flip()
+        pygame.time.wait(100)
 
 
 def main():
