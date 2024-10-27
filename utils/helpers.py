@@ -9,4 +9,4 @@ def custo_movimento(terreno):
         10: 10,  # Paralelepípedo
         -1: float('inf')  # Edifício (intransponível)
     }
-    return custos[terreno]
+    return custos.get(terreno, float('inf'))
