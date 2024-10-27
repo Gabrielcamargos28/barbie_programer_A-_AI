@@ -15,7 +15,7 @@ def inicializar_interface(mapa):
     # Criar e desenhar painel de controle
     painel = pygame.Surface((largura_tela, 100))  # Painel de 600x100 pixels
     painel.fill((200, 200, 200))  # Cor de fundo do painel (cinza claro)
-    tela.blit(painel, (0, 600))  # Posiciona o painel abaixo do mapa
+    tela.blit(painel, (0, 585))  # Posiciona o painel abaixo do mapa
     pygame.display.update()
     
     return tela

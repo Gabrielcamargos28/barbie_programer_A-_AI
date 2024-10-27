@@ -108,7 +108,7 @@ def main():
 
         desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram)
 
-        inicio = (19, 23)
+        inicio = (23, 19)
         currentPosition = inicio
         totalPath = []
         totalCust = 0
