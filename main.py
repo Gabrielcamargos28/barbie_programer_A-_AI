@@ -119,8 +119,6 @@ def main():
                 # Verifique se amigo_destino está no dicionário antes de acessar
                 if amigo_destino in amigos:
                     print(f"{amigos[amigo_destino]} não aceitou.")
-                else:
-                    print(f"Posição {amigo_destino} não está associada a nenhum amigo.")
 
             # Se já convenceu 3 amigos, volta para a posição inicial
             if acceptFriends == 3:
@@ -134,7 +132,6 @@ def main():
 
     print(f"Tempo total para encontrar amigos: {tempo_total:.2f} segundos")
     print(f"Custo total do caminho: {totalCust}")
-    print(f"Posições dos amigos que aceitaram: {[amigos[amigo] for amigo in amigos_aceitos]}")  # Imprime as posições dos amigos que aceitaram
 
     executando = True
     while executando:
