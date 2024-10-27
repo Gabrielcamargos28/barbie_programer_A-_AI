@@ -49,6 +49,35 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         
         pygame.display.flip()
         pygame.time.wait(100)
+        
+        
+        
+def calcular_menor_rota(amigos, posicao_inicial, mapa):
+    """Calcula a rota de menor custo para visitar todos os amigos."""
+    caminho_otimizado = []
+    amigos_a_visitar = list(amigos.keys())
+    posicao_atual = posicao_inicial
+
+    while amigos_a_visitar:
+        menor_caminho = None
+        amigo_selecionado = None
+        menor_custo = float('inf')
+
+        for amigo in amigos_a_visitar:
+            caminho = a_star(mapa, posicao_atual, amigo)
+            custo_caminho = sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho)
+            
+            if custo_caminho < menor_custo:
+                menor_custo = custo_caminho
+                menor_caminho = caminho
+                amigo_selecionado = amigo
+
+        caminho_otimizado.extend(menor_caminho)
+        posicao_atual = amigo_selecionado
+        amigos_a_visitar.remove(amigo_selecionado)
+
+    return caminho_otimizado
+
 
 
 def main():
@@ -67,6 +96,9 @@ def main():
     totalPath = []
     totalCust = 0
     visitados = set()
+    amigos_aceitos = []
+    
+    caminho_otimizado = calcular_menor_rota(amigos, currentPosition, mapa)
     
     while acceptFriends < 3 and remaningFriends:
         # Escolher um amigo para visitar
@@ -87,6 +119,7 @@ def main():
             # Tentar convencer o amigo
             if convencer_amigo(amigos[amigo_destino]):
                 acceptFriends += 1
+                amigos_aceitos.append((amigos[amigo_destino], amigo_destino))  # Adiciona (nome, posição)
             else:
                 print(f"{amigos[amigo_destino]} não aceitou. Indo para o próximo amigo.")
                 
@@ -102,6 +135,10 @@ def main():
             print("Barbie retornou à sua casa após convencer três amigos!")
 
     print(f"Custo total do caminho: {totalCust}")
+    print(f"Posições dos amigos que aceitaram: {amigos_aceitos}")
+    for nome, posicao in amigos_aceitos:
+        print(f"{nome} na posição {list(posicao)}")  # Exibe a posição no formato [linha, coluna]
+
 
     executando = True
     while executando:
