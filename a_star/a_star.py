@@ -6,9 +6,14 @@ def a_star(mapa, inicio, destino):
     heapq.heappush(filas_prioridade, (0, inicio))
     custo_acumulado = {inicio: 0}
     caminho = {inicio: None}
+    visitados = set()  # Conjunto para armazenar pontos já processados
 
     while filas_prioridade:
         _, ponto_atual = heapq.heappop(filas_prioridade)
+
+        if ponto_atual in visitados:
+            continue  # Ignora o ponto se já foi visitado
+        visitados.add(ponto_atual)
 
         if ponto_atual == destino:
             caminho_final = []
@@ -21,16 +26,17 @@ def a_star(mapa, inicio, destino):
         for movimento in vizinhos:
             vizinho = (ponto_atual[0] + movimento[0], ponto_atual[1] + movimento[1])
 
+            # Verifica se o vizinho está dentro dos limites do mapa
             if 0 <= vizinho[0] < len(mapa) and 0 <= vizinho[1] < len(mapa[0]):
                 terreno = mapa[vizinho[0]][vizinho[1]]
                 
                 custo_terreno = custo_movimento(terreno)
                 if custo_terreno == float('inf'):
-                    continue
+                    continue  # Pula terrenos intransponíveis
                 
-                
-                novo_custo = custo_acumulado[ponto_atual] + custo_movimento(terreno)
+                novo_custo = custo_acumulado[ponto_atual] + custo_terreno
 
+                # Checa se o custo é menor ou se o vizinho ainda não foi visitado
                 if vizinho not in custo_acumulado or novo_custo < custo_acumulado[vizinho]:
                     custo_acumulado[vizinho] = novo_custo
                     prioridade = novo_custo + heuristica(vizinho, destino)

@@ -1,6 +1,6 @@
+import pygame
 import time
 import random
-import pygame
 from datetime import timedelta
 from map.map_loader import carregar_mapa
 from map.map_converter import converter_xlsx_para_csv
@@ -48,79 +48,117 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         pygame.display.flip()
         pygame.time.wait(50)  # Ajuste no tempo de espera
 
+def desenhar_indices(tela, mapa, tamanho_celula, fonte):
+    for j in range(len(mapa[0])):
+        if j > 0:  # Não desenha o índice 0 na borda superior
+            texto = fonte.render(f'{j}', True, (255, 255, 255))
+            tela.blit(texto, (j * tamanho_celula + tamanho_celula // 2 - texto.get_width() // 2, 5))
+
+    for i in range(len(mapa)):
+        if i > 0:  # Não desenha o índice 0 na borda esquerda
+            texto = fonte.render(f'{i}', True, (255, 255, 255))
+            tela.blit(texto, (5, i * tamanho_celula + tamanho_celula // 2 - texto.get_height() // 2))
+
+    pygame.display.flip()
+
+def atualizar_painel(tela, fonte, custo_total, tempo_total):
+    # Desenhar o painel
+    painel = pygame.Surface((600, 100))
+    painel.fill((200, 200, 200))
+    tela.blit(painel, (0, 600))
+
+    # Mostrar o custo e tempo total
+    texto_custo = fonte.render(f"Custo total: {custo_total}", True, (0, 0, 0))
+    texto_tempo = fonte.render(f"Tempo total: {tempo_total}", True, (0, 0, 0))
+    tela.blit(texto_custo, (10, 610))
+    tela.blit(texto_tempo, (10, 640))
+
+    # Desenhar o botão de reiniciar
+    botao_reiniciar = pygame.Rect(500, 620, 80, 30)  # Define a área do botão
+    pygame.draw.rect(tela, (180, 0, 0), botao_reiniciar)  # Fundo vermelho do botão
+    texto_reiniciar = fonte.render("Reiniciar", True, (255, 255, 255))  # Texto do botão
+    tela.blit(texto_reiniciar, (botao_reiniciar.x + 10, botao_reiniciar.y + 5))
+
+    pygame.display.flip()
+    return botao_reiniciar  # Retorna o botão para verificar cliques
+
 def main():
-    # Configuração inicial do mapa
-    converter_xlsx_para_csv('map/mundo.xlsx', 'map/mapa.csv')
-    mapa = carregar_mapa('map/mapa.csv')
-    tamanho_celula = 600 // len(mapa)
-    tela = inicializar_interface(mapa)
+    pygame.init()
+    fonte = pygame.font.SysFont('Arial', 8)
+    fontPanel = pygame.font.SysFont('Arial', 15)
 
-    amigos = inicializar_amigos()
+    while True:  # Loop principal para reiniciar o jogo ao clicar no botão
+        # Configuração inicial
+        converter_xlsx_para_csv('map/mundo.xlsx', 'map/mapa.csv')
+        mapa = carregar_mapa('map/mapa.csv')
+        tamanho_celula = 600 // len(mapa)
+        tela = inicializar_interface(mapa)
 
-    # Sorteio dos amigos que aceitarão o convite
-    amigos_que_aceitaram = random.sample(list(amigos.keys()), 3)
-    print("Amigos que aceitarão o convite:", [amigos[amigo] for amigo in amigos_que_aceitaram])
+        amigos = inicializar_amigos()
+        desenhar_indices(tela, mapa, tamanho_celula, fonte)
 
-    desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram)
+        amigos_que_aceitaram = random.sample(list(amigos.keys()), 3)
+        print("Amigos que aceitarão o convite:", [amigos[amigo] for amigo in amigos_que_aceitaram])
 
-    inicio = (19, 23)  # Posição inicial
-    currentPosition = inicio
-    totalPath = []
-    totalCust = 0
-    visitados = set()
-    tempo_total_busca = 0  # Tempo total de busca pelos amigos aceitos
+        desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram)
 
-    # Começando a busca a partir da posição inicial
-    amigos_a_visitar = list(amigos.keys())  # Lista de amigos a visitar
+        inicio = (19, 23)
+        currentPosition = inicio
+        totalPath = []
+        totalCust = 0
+        visitados = set()
+        tempo_total_busca = 0
 
-    start_tempo_busca = time.time()  # Inicia a contagem do tempo de busca
+        # Tempo de busca
+        start_tempo_busca = time.time()
+        amigos_a_visitar = list(amigos.keys())
 
-    while amigos_a_visitar:
-        amigo_destino = random.choice(amigos_a_visitar)  # Seleciona um amigo aleatoriamente
+        while amigos_a_visitar:
+            
+            amigo_destino = random.choice(amigos_a_visitar)
 
-        start_time = time.time()
-        caminho = a_star(mapa, currentPosition, amigo_destino)
-        end_time = time.time()
-        tempo_total_busca += end_time - start_time  # Adiciona o tempo do algoritmo de busca
+            start_time = time.time()
+            caminho = a_star(mapa, currentPosition, amigo_destino)
+            end_time = time.time()
+            tempo_total_busca += end_time - start_time
 
-        if caminho:
-            desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados)
-            totalPath.extend(caminho)
-            totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho)
-            currentPosition = amigo_destino
+            if caminho:
+                desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados)
+                totalPath.extend(caminho)
+                totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho)
+                currentPosition = amigo_destino
 
-            # Verifica se o amigo destino aceitou o convite
-            if amigo_destino in amigos_que_aceitaram:
-                print(f"{amigos[amigo_destino]} aceitou o convite!")
-                amigos_a_visitar.remove(amigo_destino)  # Remove o amigo que aceitou
-            else:
-                print(f"{amigos[amigo_destino]} não aceitou.")
+                if amigo_destino in amigos_que_aceitaram:
+                    amigos_a_visitar.remove(amigo_destino)
 
-            # Se já convenceu 3 amigos, volta para a posição inicial
-            if len(set(amigo for amigo in amigos_que_aceitaram if amigo in amigos_a_visitar)) == 0:
-                caminho_de_volta = a_star(mapa, currentPosition, inicio)
-                if caminho_de_volta:
-                    desenhar_caminho(tela, caminho_de_volta, tamanho_celula, mapa, visitados)
-                    totalPath.extend(caminho_de_volta)
-                    totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho_de_volta)
-                    print("Barbie retornou à sua casa após convencer três amigos!")
-                break
+                if len(set(amigo for amigo in amigos_que_aceitaram if amigo in amigos_a_visitar)) == 0:
+                    caminho_de_volta = a_star(mapa, currentPosition, inicio)
+                    if caminho_de_volta:
+                        desenhar_caminho(tela, caminho_de_volta, tamanho_celula, mapa, visitados)
+                        totalPath.extend(caminho_de_volta)
+                        totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho_de_volta)
+                    break
 
-    # Cálculo do tempo total de busca para encontrar todos os amigos
-    tempo_busca_total = time.time() - start_tempo_busca
-    horas_busca, resto_busca = divmod(tempo_busca_total, 3600)  # Divide por 3600 para obter horas
-    minutos_busca, segundos_busca = divmod(resto_busca, 60)      # Divide o restante por 60 para obter minutos
+        # Exibe o custo total e tempo de busca no painel
+        tempo_busca_total = time.time() - start_tempo_busca
+        horas_busca, resto_busca = divmod(tempo_busca_total, 3600)
+        minutos_busca, segundos_busca = divmod(resto_busca, 60)
 
-    print(f"Tempo total para encontrar todos os amigos que aceitaram: {int(horas_busca)}:{int(minutos_busca):02}:{int(segundos_busca):02}")
-    print(f"Custo total do caminho: {totalCust}")
+        tempo_formatado = f"{int(horas_busca)} horas {int(minutos_busca):02} minutos {int(segundos_busca):02} segundos"
+        print(f"Tempo total para encontrar todos os amigos: {tempo_formatado}")
+        print(f"Custo total do caminho: {totalCust}")
+        botao_reiniciar = atualizar_painel(tela, fontPanel, totalCust, tempo_formatado)
 
-    executando = True
-    while executando:
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                executando = False
-
-    pygame.quit()
+        # Loop de eventos para verificar cliques no botão de reiniciar
+        executando = True
+        while executando:
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif evento.type == pygame.MOUSEBUTTONDOWN:
+                    if botao_reiniciar.collidepoint(evento.pos):
+                        executando = False  # Sai do loop interno para reiniciar o jogo
 
 if __name__ == "__main__":
     main()
