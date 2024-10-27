@@ -18,11 +18,12 @@ def inicializar_amigos():
     }
     return amigos
 
-def desenhar_amigos(tela, amigos, tamanho_celula):
+def desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram):
     for amigo in amigos:
+        cor = (0, 255, 0) if amigo in amigos_que_aceitaram else (0, 0, 255)  # Verde para amigos que aceitaram, azul para os outros
         pygame.draw.circle(
             tela, 
-            (0, 0, 255),  # Azul para amigos
+            cor,
             (amigo[1] * tamanho_celula + tamanho_celula // 2, amigo[0] * tamanho_celula + tamanho_celula // 2), 
             tamanho_celula // 4
         )
@@ -46,59 +47,35 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         pygame.display.flip()
         pygame.time.wait(50)  # Ajuste no tempo de espera
 
-def calcular_menor_rota(amigos, posicao_inicial, mapa):
-    caminho_otimizado = []
-    amigos_a_visitar = list(amigos.keys())
-    posicao_atual = posicao_inicial
-
-    while amigos_a_visitar:
-        menor_caminho = None
-        amigo_selecionado = None
-        menor_custo = float('inf')
-
-        for amigo in amigos_a_visitar:
-            caminho = a_star(mapa, posicao_atual, amigo)
-            custo_caminho = sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho)
-
-            if custo_caminho < menor_custo:
-                menor_custo = custo_caminho
-                menor_caminho = caminho
-                amigo_selecionado = amigo
-
-        if amigo_selecionado is not None:
-            caminho_otimizado.extend(menor_caminho)
-            posicao_atual = amigo_selecionado
-            amigos_a_visitar.remove(amigo_selecionado)
-
-    return caminho_otimizado
-
 def main():
     # Configuração inicial do mapa
     converter_xlsx_para_csv('map/mundo.xlsx', 'map/mapa.csv')
     mapa = carregar_mapa('map/mapa.csv')
     tamanho_celula = 600 // len(mapa)
     tela = inicializar_interface(mapa)
-    
+
     amigos = inicializar_amigos()
-    desenhar_amigos(tela, amigos, tamanho_celula)
 
     # Sorteio dos amigos que aceitarão o convite
     amigos_que_aceitaram = random.sample(list(amigos.keys()), 3)
     print("Amigos que aceitarão o convite:", [amigos[amigo] for amigo in amigos_que_aceitaram])
 
+    desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram)
+
     inicio = (19, 23)  # Posição inicial
     currentPosition = inicio
-    acceptFriends = 0
     totalPath = []
     totalCust = 0
     visitados = set()
     tempo_total = 0
-    amigos_aceitos = set()  # Usando um conjunto para armazenar posições únicas dos amigos que aceitaram
+    tempo_caminho = 0  # Variável para armazenar o tempo total do caminho
 
     # Começando a busca a partir da posição inicial
-    caminho_otimizado = calcular_menor_rota(amigos, currentPosition, mapa)
+    amigos_a_visitar = list(amigos.keys())  # Lista de amigos a visitar
 
-    for amigo_destino in caminho_otimizado:
+    while amigos_a_visitar:
+        amigo_destino = random.choice(amigos_a_visitar)  # Seleciona um amigo aleatoriamente
+
         start_time = time.time()
         caminho = a_star(mapa, currentPosition, amigo_destino)
         end_time = time.time()
@@ -113,15 +90,12 @@ def main():
             # Verifica se o amigo destino aceitou o convite
             if amigo_destino in amigos_que_aceitaram:
                 print(f"{amigos[amigo_destino]} aceitou o convite!")
-                acceptFriends += 1
-                amigos_aceitos.add(amigo_destino)  # Adiciona a posição do amigo aceito ao conjunto
+                amigos_a_visitar.remove(amigo_destino)  # Remove o amigo que aceitou
             else:
-                # Verifique se amigo_destino está no dicionário antes de acessar
-                if amigo_destino in amigos:
-                    print(f"{amigos[amigo_destino]} não aceitou.")
+                print(f"{amigos[amigo_destino]} não aceitou.")
 
             # Se já convenceu 3 amigos, volta para a posição inicial
-            if acceptFriends == 3:
+            if len(set(amigo for amigo in amigos_que_aceitaram if amigo in amigos_a_visitar)) == 0:
                 caminho_de_volta = a_star(mapa, currentPosition, inicio)
                 if caminho_de_volta:
                     desenhar_caminho(tela, caminho_de_volta, tamanho_celula, mapa, visitados)
@@ -130,7 +104,9 @@ def main():
                     print("Barbie retornou à sua casa após convencer três amigos!")
                 break
 
-    print(f"Tempo total para encontrar amigos: {tempo_total:.2f} segundos")
+    # Cálculo do tempo total que a Barbie demorou para percorrer todo o caminho
+    tempo_caminho = tempo_total  # O tempo total de busca e movimentação
+    print(f"Tempo total para encontrar amigos e percorrer todo o caminho: {tempo_caminho:.2f} segundos")
     print(f"Custo total do caminho: {totalCust}")
 
     executando = True
@@ -138,7 +114,7 @@ def main():
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 executando = False
-                
+
     pygame.quit()
 
 if __name__ == "__main__":
