@@ -23,6 +23,12 @@ def a_star(mapa, inicio, destino):
 
             if 0 <= vizinho[0] < len(mapa) and 0 <= vizinho[1] < len(mapa[0]):
                 terreno = mapa[vizinho[0]][vizinho[1]]
+                
+                custo_terreno = custo_movimento(terreno)
+                if custo_terreno == float('inf'):
+                    continue
+                
+                
                 novo_custo = custo_acumulado[ponto_atual] + custo_movimento(terreno)
 
                 if vizinho not in custo_acumulado or novo_custo < custo_acumulado[vizinho]:
