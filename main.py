@@ -7,6 +7,7 @@ from map.map_converter import converter_xlsx_para_csv
 from a_star.a_star import a_star
 from interface.interface import inicializar_interface
 from utils.helpers import custo_movimento
+import math 
 
 def inicializar_amigos():
     amigos = {
@@ -21,7 +22,7 @@ def inicializar_amigos():
 
 def desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram):
     for amigo in amigos:
-        cor = (0, 255, 0) if amigo in amigos_que_aceitaram else (0, 0, 255)  # Verde para amigos que aceitaram, azul para os outros
+        cor = (0, 255, 0) if amigo in amigos_que_aceitaram else (0, 0, 255) 
         pygame.draw.circle(
             tela, 
             cor,
@@ -36,7 +37,7 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         custo_parcial += custo_movimento(mapa[passo[0]][passo[1]])
         print(f"Custo atual após o passo {passo}: {custo_parcial}")
         
-        cor = (255, 0, 255) if passo not in visitados else (128, 0, 5)  # Rosa para novo, cinza para repetido
+        cor = (255, 0, 255) if passo not in visitados else (128, 0, 5)  
         pygame.draw.circle(
             tela, 
             cor,
@@ -46,49 +47,54 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         visitados.add(passo)
         
         pygame.display.flip()
-        pygame.time.wait(50)  # Ajuste no tempo de espera
+        pygame.time.wait(50) 
 
 def desenhar_indices(tela, mapa, tamanho_celula, fonte):
     for j in range(len(mapa[0])):
-        if j > 0:  # Não desenha o índice 0 na borda superior
+        if j > 0:  
             texto = fonte.render(f'{j}', True, (255, 255, 255))
             tela.blit(texto, (j * tamanho_celula + tamanho_celula // 2 - texto.get_width() // 2, 5))
 
     for i in range(len(mapa)):
-        if i > 0:  # Não desenha o índice 0 na borda esquerda
+        if i > 0:  
             texto = fonte.render(f'{i}', True, (255, 255, 255))
             tela.blit(texto, (5, i * tamanho_celula + tamanho_celula // 2 - texto.get_height() // 2))
 
     pygame.display.flip()
 
 def atualizar_painel(tela, fonte, custo_total, tempo_total):
-    # Desenhar o painel
+    
     painel = pygame.Surface((600, 100))
     painel.fill((200, 200, 200))
     tela.blit(painel, (0, 600))
 
-    # Mostrar o custo e tempo total
+    
     texto_custo = fonte.render(f"Custo total: {custo_total}", True, (0, 0, 0))
     texto_tempo = fonte.render(f"Tempo total: {tempo_total}", True, (0, 0, 0))
     tela.blit(texto_custo, (10, 610))
     tela.blit(texto_tempo, (10, 640))
 
-    # Desenhar o botão de reiniciar
-    botao_reiniciar = pygame.Rect(500, 620, 80, 30)  # Define a área do botão
-    pygame.draw.rect(tela, (180, 0, 0), botao_reiniciar)  # Fundo vermelho do botão
-    texto_reiniciar = fonte.render("Reiniciar", True, (255, 255, 255))  # Texto do botão
+    
+    botao_reiniciar = pygame.Rect(500, 620, 80, 30) 
+    pygame.draw.rect(tela, (180, 0, 0), botao_reiniciar)
+    texto_reiniciar = fonte.render("Reiniciar", True, (255, 255, 255)) 
     tela.blit(texto_reiniciar, (botao_reiniciar.x + 10, botao_reiniciar.y + 5))
 
     pygame.display.flip()
-    return botao_reiniciar  # Retorna o botão para verificar cliques
+    return botao_reiniciar 
+
+def calcular_distancia(ponto1, ponto2):
+    """Calcula a distância euclidiana entre dois pontos."""
+    return math.sqrt((ponto1[0] - ponto2[0]) ** 2 + (ponto1[1] - ponto2[1]) ** 2)
+
 
 def main():
     pygame.init()
     fonte = pygame.font.SysFont('Arial', 8)
     fontPanel = pygame.font.SysFont('Arial', 15)
 
-    while True:  # Loop principal para reiniciar o jogo ao clicar no botão
-        # Configuração inicial
+    while True:  
+        
         converter_xlsx_para_csv('map/mundo.xlsx', 'map/mapa.csv')
         mapa = carregar_mapa('map/mapa.csv')
         tamanho_celula = 600 // len(mapa)
@@ -112,6 +118,7 @@ def main():
         # Tempo de busca
         start_tempo_busca = time.time()
         amigos_a_visitar = list(amigos.keys())
+        
 
         while amigos_a_visitar:
             
@@ -139,7 +146,7 @@ def main():
                         totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho_de_volta)
                     break
 
-        # Exibe o custo total e tempo de busca no painel
+        
         tempo_busca_total = time.time() - start_tempo_busca
         horas_busca, resto_busca = divmod(tempo_busca_total, 3600)
         minutos_busca, segundos_busca = divmod(resto_busca, 60)
@@ -149,7 +156,7 @@ def main():
         print(f"Custo total do caminho: {totalCust}")
         botao_reiniciar = atualizar_painel(tela, fontPanel, totalCust, tempo_formatado)
 
-        # Loop de eventos para verificar cliques no botão de reiniciar
+
         executando = True
         while executando:
             for evento in pygame.event.get():
@@ -158,7 +165,7 @@ def main():
                     return
                 elif evento.type == pygame.MOUSEBUTTONDOWN:
                     if botao_reiniciar.collidepoint(evento.pos):
-                        executando = False  # Sai do loop interno para reiniciar o jogo
+                        executando = False 
 
 if __name__ == "__main__":
     main()
