@@ -3,37 +3,11 @@ from map.map_loader import carregar_mapa, salvar_mapa_como_csv
 from map.map_converter import converter_xlsx_para_csv
 from a_star.a_star import a_star
 from personas.friends import inicializar_amigos, convencer_amigo
-from interface.interface import inicializar_interface, atualizar_interface
+from interface.interface import inicializar_interface
 import pygame
 from utils.helpers import heuristica, custo_movimento
 
 
-
-def atualizar_interface(tela, mapa, posicao_barbie, visitados):
-    """Atualiza a interface, desenhando o mapa e a posição da Barbie."""
-    tamanho_celula = 600 // len(mapa)
-    
-    # Desenhar o mapa
-    desenhar_mapa(tela, mapa)  
-    
-    # Desenhar caminho percorrido
-    for passo in visitados:
-        pygame.draw.circle(
-            tela,
-            (128, 128, 128),  # Cinza para o caminho já percorrido
-            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2),
-            tamanho_celula // 6
-        )
-    
-    # Desenhar a Barbie
-    pygame.draw.circle(
-        tela, 
-        (255, 0, 0),  # Vermelho para a Barbie
-        (posicao_barbie[1] * tamanho_celula + tamanho_celula // 2, posicao_barbie[0] * tamanho_celula + tamanho_celula // 2), 
-        tamanho_celula // 3
-    )
-    
-    pygame.display.flip()
 
 
 def desenhar_amigos(tela, amigos, tamanho_celula):
@@ -86,7 +60,7 @@ def main():
     amigos = inicializar_amigos()
     desenhar_amigos(tela, amigos, tamanho_celula)
 
-    inicio = (22, 18)
+    inicio = (23, 19)
     currentPosition = inicio
     acceptFriends = 0
     remaningFriends = list(amigos.keys()) 
@@ -115,6 +89,8 @@ def main():
                 acceptFriends += 1
             else:
                 print(f"{amigos[amigo_destino]} não aceitou. Indo para o próximo amigo.")
+                
+                
 
     # Retornar à Casa da Barbie após convencer três amigos
     if acceptFriends == 3:

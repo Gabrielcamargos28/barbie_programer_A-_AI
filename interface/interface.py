@@ -32,11 +32,3 @@ def desenhar_mapa(tela, mapa):
             cor = cores.get(mapa[linha][coluna], (0, 0, 0))  # Preto como padrão para valores desconhecidos
             pygame.draw.rect(tela, cor, (coluna * tamanho_celula, linha * tamanho_celula, tamanho_celula, tamanho_celula))
     pygame.display.flip()
-
-
-# Atualizar o movimento da Barbie
-def atualizar_interface(tela, mapa, posicao_barbie):
-    desenhar_mapa(tela, mapa)  # Desenha o mapa
-    tamanho_celula = 600 // len(mapa)
-    pygame.draw.circle(tela, (255, 0, 0), (posicao_barbie[1] * tamanho_celula + tamanho_celula // 2, posicao_barbie[0] * tamanho_celula + tamanho_celula // 2), tamanho_celula // 3)
-    pygame.display.flip()
