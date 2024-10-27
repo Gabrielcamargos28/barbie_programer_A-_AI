@@ -1,6 +1,7 @@
 import time
 import random
 import pygame
+from datetime import timedelta
 from map.map_loader import carregar_mapa
 from map.map_converter import converter_xlsx_para_csv
 from a_star.a_star import a_star
@@ -35,7 +36,7 @@ def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
         custo_parcial += custo_movimento(mapa[passo[0]][passo[1]])
         print(f"Custo atual após o passo {passo}: {custo_parcial}")
         
-        cor = (255, 0, 255) if passo not in visitados else (128, 128, 128)  # Rosa para novo, cinza para repetido
+        cor = (255, 0, 255) if passo not in visitados else (128, 0, 5)  # Rosa para novo, cinza para repetido
         pygame.draw.circle(
             tela, 
             cor,
@@ -67,11 +68,12 @@ def main():
     totalPath = []
     totalCust = 0
     visitados = set()
-    tempo_total = 0
-    tempo_caminho = 0  # Variável para armazenar o tempo total do caminho
+    tempo_total_busca = 0  # Tempo total de busca pelos amigos aceitos
 
     # Começando a busca a partir da posição inicial
     amigos_a_visitar = list(amigos.keys())  # Lista de amigos a visitar
+
+    start_tempo_busca = time.time()  # Inicia a contagem do tempo de busca
 
     while amigos_a_visitar:
         amigo_destino = random.choice(amigos_a_visitar)  # Seleciona um amigo aleatoriamente
@@ -79,7 +81,7 @@ def main():
         start_time = time.time()
         caminho = a_star(mapa, currentPosition, amigo_destino)
         end_time = time.time()
-        tempo_total += end_time - start_time
+        tempo_total_busca += end_time - start_time  # Adiciona o tempo do algoritmo de busca
 
         if caminho:
             desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados)
@@ -104,9 +106,12 @@ def main():
                     print("Barbie retornou à sua casa após convencer três amigos!")
                 break
 
-    # Cálculo do tempo total que a Barbie demorou para percorrer todo o caminho
-    tempo_caminho = tempo_total  # O tempo total de busca e movimentação
-    print(f"Tempo total para encontrar amigos e percorrer todo o caminho: {tempo_caminho:.2f} segundos")
+    # Cálculo do tempo total de busca para encontrar todos os amigos
+    tempo_busca_total = time.time() - start_tempo_busca
+    horas_busca, resto_busca = divmod(tempo_busca_total, 3600)  # Divide por 3600 para obter horas
+    minutos_busca, segundos_busca = divmod(resto_busca, 60)      # Divide o restante por 60 para obter minutos
+
+    print(f"Tempo total para encontrar todos os amigos que aceitaram: {int(horas_busca)}:{int(minutos_busca):02}:{int(segundos_busca):02}")
     print(f"Custo total do caminho: {totalCust}")
 
     executando = True
