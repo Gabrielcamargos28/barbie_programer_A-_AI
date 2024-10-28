@@ -1,13 +1,14 @@
 import pygame
 import time
 import random
+import math
 from datetime import timedelta
 from map.map_loader import carregar_mapa
 from map.map_converter import converter_xlsx_para_csv
 from a_star.a_star import a_star
 from interface.interface import inicializar_interface
 from utils.helpers import custo_movimento
-import math 
+
 
 def inicializar_amigos():
     amigos = {
@@ -18,52 +19,51 @@ def inicializar_amigos():
         (36, 15): {"nome": "Stace", "imagem": "images/avatar5.png"},
         (37, 37): {"nome": "Gabi", "imagem": "images/avatar6.png"},
     }
-    
-    # Carregar e redimensionar as imagens
+
     for amigo in amigos.values():
         imagem = pygame.image.load(amigo["imagem"])
         amigo["imagem_carregada"] = pygame.transform.scale(imagem, (10, 15))
-    
+
     return amigos
+
 
 def desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram):
     for posicao, amigo_info in amigos.items():
-        # Define a cor de contorno dependendo se o amigo aceitou ou não
         cor_contorno = (0, 255, 0) if posicao in amigos_que_aceitaram else (0, 0, 255)
-        
-        # Desenha o contorno ao redor da célula
+
         pygame.draw.rect(
-            tela, 
-            cor_contorno, 
-            (posicao[1] * tamanho_celula, posicao[0] * tamanho_celula, tamanho_celula, tamanho_celula), 
+            tela,
+            cor_contorno,
+            (posicao[1] * tamanho_celula, posicao[0] * tamanho_celula, tamanho_celula, tamanho_celula),
             2
         )
-        
-        # Pega a imagem carregada e redimensionada do amigo e desenha na posição correta
+
         tela.blit(
-            amigo_info["imagem_carregada"], 
+            amigo_info["imagem_carregada"],
             (posicao[1] * tamanho_celula, posicao[0] * tamanho_celula)
         )
 
     pygame.display.flip()
+
 
 def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
     custo_parcial = 0
     for passo in caminho:
         custo_parcial += custo_movimento(mapa[passo[0]][passo[1]])
         print(f"Custo atual após o passo {passo}: {custo_parcial}")
-        
+
         cor = (255, 0, 255) if passo not in visitados else (128, 0, 5)  
         pygame.draw.circle(
-            tela, 
+            tela,
             cor,
-            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2), 
+            (passo[1] * tamanho_celula + tamanho_celula // 2, passo[0] * tamanho_celula + tamanho_celula // 2),
             tamanho_celula // 6
         )
         visitados.add(passo)
-        
+
         pygame.display.flip()
         pygame.time.wait(50) 
+
 
 def desenhar_indices(tela, mapa, tamanho_celula, fonte):
     for j in range(len(mapa[0])):
@@ -78,19 +78,17 @@ def desenhar_indices(tela, mapa, tamanho_celula, fonte):
 
     pygame.display.flip()
 
+
 def atualizar_painel(tela, fonte, custo_total, tempo_total):
-    
     painel = pygame.Surface((600, 100))
     painel.fill((200, 200, 200))
     tela.blit(painel, (0, 600))
 
-    
     texto_custo = fonte.render(f"Custo total: {custo_total}", True, (0, 0, 0))
     texto_tempo = fonte.render(f"Tempo total: {tempo_total}", True, (0, 0, 0))
     tela.blit(texto_custo, (10, 610))
     tela.blit(texto_tempo, (10, 640))
 
-    
     botao_reiniciar = pygame.Rect(500, 620, 80, 30) 
     pygame.draw.rect(tela, (180, 0, 0), botao_reiniciar)
     texto_reiniciar = fonte.render("Reiniciar", True, (255, 255, 255)) 
@@ -99,9 +97,23 @@ def atualizar_painel(tela, fonte, custo_total, tempo_total):
     pygame.display.flip()
     return botao_reiniciar 
 
+
 def calcular_distancia(ponto1, ponto2):
     """Calcula a distância euclidiana entre dois pontos."""
-    return math.sqrt((ponto1[0] - ponto2[0]) ** 2 + (ponto1[1] - ponto2[1]) ** 2)
+    return abs(ponto1[0] - ponto2[0]) + abs(ponto1[1] - ponto2[1])
+
+
+def encontrar_amigo_mais_proximo(mapa, posicao_atual, amigos_a_visitar):
+    amigo_proximo = None
+    menor_distancia = float('inf')
+
+    for amigo in amigos_a_visitar:
+        distancia = calcular_distancia(posicao_atual, amigo)
+        if distancia < menor_distancia:
+            menor_distancia = distancia
+            amigo_proximo = amigo
+
+    return amigo_proximo
 
 
 def main():
@@ -109,8 +121,7 @@ def main():
     fonte = pygame.font.SysFont('Arial', 8)
     fontPanel = pygame.font.SysFont('Arial', 15)
 
-    while True:  
-        
+    while True:
         converter_xlsx_para_csv('map/mundo.xlsx', 'map/mapa.csv')
         mapa = carregar_mapa('map/mapa.csv')
         tamanho_celula = 600 // len(mapa)
@@ -120,7 +131,7 @@ def main():
         desenhar_indices(tela, mapa, tamanho_celula, fonte)
 
         amigos_que_aceitaram = random.sample(list(amigos.keys()), 3)
-        print("Amigos que aceitarão o convite:", [amigos[amigo] for amigo in amigos_que_aceitaram])
+        print("Amigos que aceitarão o convite:", [amigos[amigo]["nome"] for amigo in amigos_que_aceitaram])
 
         desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram)
 
@@ -131,14 +142,14 @@ def main():
         visitados = set()
         tempo_total_busca = 0
 
-        # Tempo de busca
         start_tempo_busca = time.time()
         amigos_a_visitar = list(amigos.keys())
-        
 
         while amigos_a_visitar:
-            
-            amigo_destino = random.choice(amigos_a_visitar)
+            amigo_destino = encontrar_amigo_mais_proximo(mapa, currentPosition, amigos_a_visitar)
+
+            if amigo_destino is None:
+                break
 
             start_time = time.time()
             caminho = a_star(mapa, currentPosition, amigo_destino)
@@ -151,18 +162,18 @@ def main():
                 totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho)
                 currentPosition = amigo_destino
 
-                if amigo_destino in amigos_que_aceitaram:
-                    amigos_a_visitar.remove(amigo_destino)
+            # Remover amigo_destino de amigos_a_visitar somente se ele estiver na lista
+            if amigo_destino in amigos_a_visitar:
+                amigos_a_visitar.remove(amigo_destino)
 
-                if len(set(amigo for amigo in amigos_que_aceitaram if amigo in amigos_a_visitar)) == 0:
-                    caminho_de_volta = a_star(mapa, currentPosition, inicio)
-                    if caminho_de_volta:
-                        desenhar_caminho(tela, caminho_de_volta, tamanho_celula, mapa, visitados)
-                        totalPath.extend(caminho_de_volta)
-                        totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho_de_volta)
-                    break
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                pygame.display.flip()
 
-        
+            pygame.time.delay(50)
+
         tempo_busca_total = time.time() - start_tempo_busca
         horas_busca, resto_busca = divmod(tempo_busca_total, 3600)
         minutos_busca, segundos_busca = divmod(resto_busca, 60)
@@ -172,16 +183,18 @@ def main():
         print(f"Custo total do caminho: {totalCust}")
         botao_reiniciar = atualizar_painel(tela, fontPanel, totalCust, tempo_formatado)
 
-
         executando = True
         while executando:
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     pygame.quit()
-                    return
-                elif evento.type == pygame.MOUSEBUTTONDOWN:
-                    if botao_reiniciar.collidepoint(evento.pos):
-                        executando = False 
+                    exit()
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    if evento.button == 1 and botao_reiniciar.collidepoint(evento.pos):
+                        executando = False
+                        break
+
+    pygame.quit()
 
 if __name__ == "__main__":
     main()

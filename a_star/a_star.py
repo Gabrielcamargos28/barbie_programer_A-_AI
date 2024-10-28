@@ -6,9 +6,13 @@ def a_star(mapa, inicio, destino):
     heapq.heappush(filas_prioridade, (0, inicio))
     custo_acumulado = {inicio: 0}
     caminho = {inicio: None}
+    visitados = set()
 
     while filas_prioridade:
         _, ponto_atual = heapq.heappop(filas_prioridade)
+        if ponto_atual in visitados:
+            continue
+        visitados.add(ponto_atual)
 
         if ponto_atual == destino:
             caminho_final = []
@@ -23,7 +27,12 @@ def a_star(mapa, inicio, destino):
 
             if 0 <= vizinho[0] < len(mapa) and 0 <= vizinho[1] < len(mapa[0]):
                 terreno = mapa[vizinho[0]][vizinho[1]]
-                novo_custo = custo_acumulado[ponto_atual] + custo_movimento(terreno)
+                
+                custo_terreno = custo_movimento(terreno)
+                if custo_terreno == float('inf'):
+                    continue
+                
+                novo_custo = custo_acumulado[ponto_atual] + custo_terreno
 
                 if vizinho not in custo_acumulado or novo_custo < custo_acumulado[vizinho]:
                     custo_acumulado[vizinho] = novo_custo
