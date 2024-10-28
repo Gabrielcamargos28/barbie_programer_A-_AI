@@ -9,12 +9,11 @@ from a_star.a_star import a_star
 from interface.interface import inicializar_interface
 from utils.helpers import custo_movimento
 
-
 def inicializar_amigos():
     amigos = {
         (5, 13): {"nome": "Suzy", "imagem": "images/avatar1.png"},
         (10, 9): {"nome": "Bete", "imagem": "images/avatar2.png"},
-        (6, 35): {"nome": "Mkay", "imagem": "images/avatar3.png"},
+        (16, 13): {"nome": "Mkay", "imagem": "images/avatar3.png"},
         (24, 38): {"nome": "Raquel", "imagem": "images/avatar4.png"},
         (36, 15): {"nome": "Stace", "imagem": "images/avatar5.png"},
         (37, 37): {"nome": "Gabi", "imagem": "images/avatar6.png"},
@@ -144,6 +143,7 @@ def main():
 
         start_tempo_busca = time.time()
         amigos_a_visitar = list(amigos.keys())
+        amigos_encontrados = set()  # Usar um conjunto para amigos encontrados
 
         while amigos_a_visitar:
             amigo_destino = encontrar_amigo_mais_proximo(mapa, currentPosition, amigos_a_visitar)
@@ -161,6 +161,9 @@ def main():
                 totalPath.extend(caminho)
                 totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho)
                 currentPosition = amigo_destino
+                # Adiciona amigo que aceitou ao conjunto de amigos encontrados
+                if amigo_destino in amigos_que_aceitaram:
+                    amigos_encontrados.add(amigo_destino)
 
             # Remover amigo_destino de amigos_a_visitar somente se ele estiver na lista
             if amigo_destino in amigos_a_visitar:
@@ -174,27 +177,29 @@ def main():
 
             pygame.time.delay(50)
 
+            # Se todos os amigos que aceitaram foram encontrados, voltar para o ponto de partida
+            if amigos_encontrados == set(amigos_que_aceitaram):
+                caminho_retorno = a_star(mapa, currentPosition, inicio)
+                if caminho_retorno:
+                    desenhar_caminho(tela, caminho_retorno, tamanho_celula, mapa, visitados)
+                    totalPath.extend(caminho_retorno)
+                    totalCust += sum(custo_movimento(mapa[passo[0]][passo[1]]) for passo in caminho_retorno)
+                
+                break  # Sai do loop após encontrar todos os amigos
+
         tempo_busca_total = time.time() - start_tempo_busca
         horas_busca, resto_busca = divmod(tempo_busca_total, 3600)
         minutos_busca, segundos_busca = divmod(resto_busca, 60)
 
-        tempo_formatado = f"{int(horas_busca)} horas {int(minutos_busca):02} minutos {int(segundos_busca):02} segundos"
-        print(f"Tempo total para encontrar todos os amigos: {tempo_formatado}")
-        print(f"Custo total do caminho: {totalCust}")
-        botao_reiniciar = atualizar_painel(tela, fontPanel, totalCust, tempo_formatado)
+        tempo_formatado = f"{int(horas_busca)} horas {int(minutos_busca)} minutos {int(segundos_busca)} segundos"
+        atualizar_painel(tela, fontPanel, totalCust, tempo_formatado)
+        
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                exit()
 
-        executando = True
-        while executando:
-            for evento in pygame.event.get():
-                if evento.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                if evento.type == pygame.MOUSEBUTTONDOWN:
-                    if evento.button == 1 and botao_reiniciar.collidepoint(evento.pos):
-                        executando = False
-                        break
-
-    pygame.quit()
+        pygame.time.wait(3000)  # Espera 3 segundos para permitir ao usuário visualizar a tela
 
 if __name__ == "__main__":
     main()
