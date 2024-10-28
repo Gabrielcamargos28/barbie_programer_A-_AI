@@ -11,24 +11,40 @@ import math
 
 def inicializar_amigos():
     amigos = {
-        (5, 13): "Amigo 1",
-        (10, 9): "Amigo 2",
-        (6, 35): "Amigo 3",
-        (24, 38): "Amigo 4",
-        (36, 15): "Amigo 5",
-        (37, 37): "Amigo 6",
+        (5, 13): {"nome": "Suzy", "imagem": "images/avatar1.png"},
+        (10, 9): {"nome": "Bete", "imagem": "images/avatar2.png"},
+        (6, 35): {"nome": "Mkay", "imagem": "images/avatar3.png"},
+        (24, 38): {"nome": "Raquel", "imagem": "images/avatar4.png"},
+        (36, 15): {"nome": "Stace", "imagem": "images/avatar5.png"},
+        (37, 37): {"nome": "Gabi", "imagem": "images/avatar6.png"},
     }
+    
+    # Carregar e redimensionar as imagens
+    for amigo in amigos.values():
+        imagem = pygame.image.load(amigo["imagem"])
+        amigo["imagem_carregada"] = pygame.transform.scale(imagem, (10, 15))
+    
     return amigos
 
 def desenhar_amigos(tela, amigos, tamanho_celula, amigos_que_aceitaram):
-    for amigo in amigos:
-        cor = (0, 255, 0) if amigo in amigos_que_aceitaram else (0, 0, 255) 
-        pygame.draw.circle(
+    for posicao, amigo_info in amigos.items():
+        # Define a cor de contorno dependendo se o amigo aceitou ou não
+        cor_contorno = (0, 255, 0) if posicao in amigos_que_aceitaram else (0, 0, 255)
+        
+        # Desenha o contorno ao redor da célula
+        pygame.draw.rect(
             tela, 
-            cor,
-            (amigo[1] * tamanho_celula + tamanho_celula // 2, amigo[0] * tamanho_celula + tamanho_celula // 2), 
-            tamanho_celula // 4
+            cor_contorno, 
+            (posicao[1] * tamanho_celula, posicao[0] * tamanho_celula, tamanho_celula, tamanho_celula), 
+            2
         )
+        
+        # Pega a imagem carregada e redimensionada do amigo e desenha na posição correta
+        tela.blit(
+            amigo_info["imagem_carregada"], 
+            (posicao[1] * tamanho_celula, posicao[0] * tamanho_celula)
+        )
+
     pygame.display.flip()
 
 def desenhar_caminho(tela, caminho, tamanho_celula, mapa, visitados):
